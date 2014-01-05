@@ -34,7 +34,7 @@ def process_accounts(sc):
 		reddit.set_login(subreddit['account'], config['reddit']['accounts'][subreddit['account']])
 		print 'Authenticated as %s, starting checks' % subreddit['account']
 
-		items = reddit.process()
+		items = reddit.items_to_process()
 		reddit.do_magic(imgur, items)
 		print 'Finished %s' % (subreddit['subreddit'])
 

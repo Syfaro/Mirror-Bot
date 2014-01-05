@@ -42,7 +42,7 @@ class RedditHandler:
 
 			return False
 
-	def process(self):
+	def items_to_process(self):
 		things = self.get_new_submissions()
 
 		to_process = []
@@ -97,4 +97,4 @@ class RedditHandler:
 
 			comment += "\n\n_I am a bot, please message me with any concerns!_"
 
-			print comment
+			item.add_comment(comment)
