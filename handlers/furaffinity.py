@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 from soupselect import select
 
 def furaffinity(thing, config):
+	"""
+	handler for furaffinity.net
+	"""
 	thing.url = string.replace(thing.url, 'view', 'full')
 
 	page = requests.get(thing.url, cookies=config['cookies']).content

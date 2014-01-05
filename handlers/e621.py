@@ -2,6 +2,9 @@ import requests
 import re
 
 def e621(thing, config):
+	"""
+	handler for e621.net
+	"""
 	post_id = re.findall(r"e621.net/post/show/(\d+)", thing.url)
 
 	if post_id is None:
