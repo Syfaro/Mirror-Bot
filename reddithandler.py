@@ -1,100 +1,102 @@
 import praw
 import redis
 
-from pprint import pprint
 
 class RedditHandler:
-	def __init__(self, user_agent='Pr0n mirror bot by /u/Syfaro'):
-		self.reddit = praw.Reddit(user_agent=user_agent)
-		self.redis = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-	def set_site_handler(self, handler):
-		self.handler = handler
+    def __init__(self, user_agent='Pr0n mirror bot by /u/Syfaro'):
+        self.reddit = praw.Reddit(user_agent=user_agent)
+        self.redis = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-	def set_subreddit(self, subreddit):
-		self.subreddit = subreddit
+    def set_site_handler(self, handler):
+        self.handler = handler
 
-	def set_login(self, username, password):
-		self.username = username
-		self.reddit.login(username, password)
+    def set_subreddit(self, subreddit):
+        self.subreddit = subreddit
 
-	def get_new_submissions(self):
-		last_submission = self.redis.get('mirrorbot:%s' % self.subreddit)
+    def set_login(self, username, password):
+        self.username = username
+        self.reddit.login(username, password)
 
-		submissions = self.reddit.get_subreddit(self.subreddit).get_new(limit=100)
+    def get_new_submissions(self):
+        last_submission = self.redis.get('mirrorbot:%s' % self.subreddit)
 
-		if last_submission == None:
-			return submissions
+        submissions = self.reddit.get_subreddit(
+            self.subreddit).get_new(limit=100)
 
-		new_submissions = []
-		for submission in submissions:
-			if submission.name == last_submission:
-				return new_submissions
+        if last_submission is None:
+            return submissions
 
-			new_submissions.append(submission)
+        new_submissions = []
+        for submission in submissions:
+            if submission.name == last_submission:
+                return new_submissions
 
-	def has_made_comment(self, thing):
-		flat_comments = praw.helpers.flatten_tree(thing['thing'].comments)
+            new_submissions.append(submission)
 
-		for comment in flat_comments:
-			if comment.author == self.username:
-				return True
+    def has_made_comment(self, thing):
+        flat_comments = praw.helpers.flatten_tree(thing['thing'].comments)
 
-			return False
+        for comment in flat_comments:
+            if comment.author == self.username:
+                return True
 
-	def items_to_process(self):
-		things = self.get_new_submissions()
+            return False
 
-		to_process = []
-		for thing in things:
-			link = self.handler(thing)
-			if link != None:
-				item = {'thing': thing}
+    def items_to_process(self):
+        things = self.get_new_submissions()
 
-				if isinstance(link, dict):
-					item['link'] = link['link']
-					if 'author' in link:
-						item['author'] = link['author']
+        to_process = []
+        for thing in things:
+            link = self.handler(thing)
+            if link is not None:
+                item = {'thing': thing}
 
-					if 'title' in link:
-						item['title'] = link['title']
+                if isinstance(link, dict):
+                    item['link'] = link['link']
+                    if 'author' in link:
+                        item['author'] = link['author']
 
-					if 'source' in link:
-						item['source'] = link['source']
-				else:
-					item['link'] = link
+                    if 'title' in link:
+                        item['title'] = link['title']
 
-				to_process.append(item)
+                    if 'source' in link:
+                        item['source'] = link['source']
+                else:
+                    item['link'] = link
 
-		return to_process
+                to_process.append(item)
 
-	def do_magic(self, imgur, to_process):
-		for item in to_process:
-			if self.has_made_comment(item):
-				continue
+        return to_process
 
-			links = []
-			if isinstance(item['link'], list):
-				for link in item['link']:
-					response = imgur.upload_image_by_url(link)
-					links.append(response['data']['link'])
-			else:
-				response = imgur.upload_image_by_url(item['link'])
-				links.append(response['data']['link'])
-				
-			links_formatted = ''
-			for link in links:
-				links_formatted += "* [%s](%s)" % (link, link)
+    def do_magic(self, imgur, to_process):
+        for item in to_process:
+            if self.has_made_comment(item):
+                continue
 
-			comment = "imgur mirror:\n\n%s\n" % (links_formatted)
+            links = []
+            if isinstance(item['link'], list):
+                for link in item['link']:
+                    response = imgur.upload_image_by_url(link)
+                    links.append(response['data']['link'])
+            else:
+                response = imgur.upload_image_by_url(item['link'])
+                links.append(response['data']['link'])
 
-			if 'title' in item:
-				comment += "\nTitle: %s\n" % (item['title'])
-			if 'author' in item:
-				comment += "\nArtist: %s\n" % (item['author'])
-			if 'source' in item:
-				comment += "\nSource: [%s](%s)\n" % (item['source'], item['source'])
+            links_formatted = ''
+            for link in links:
+                links_formatted += "* [%s](%s)" % (link, link)
 
-			comment += "\n\n_I am a bot, please message me with any concerns!_"
+            comment = "imgur mirror:\n\n%s\n" % (links_formatted)
 
-			item.add_comment(comment)
+            if 'title' in item:
+                comment += "\nTitle: %s\n" % (item['title'])
+            if 'author' in item:
+                comment += "\nArtist: %s\n" % (item['author'])
+            if 'source' in item:
+                comment += "\nSource: [%s](%s)\n" % (item['source'],
+                                                     item['source'])
+
+            comment += "\n\n_I am a bot, please message me with any concerns!_"
+
+            item.add_comment(comment)
