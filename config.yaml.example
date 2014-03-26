@@ -1,0 +1,16 @@
+bot:
+    debug         : true
+reddit:
+    subreddits:
+      - subreddit : furry
+        account   : yiffybot
+    accounts:
+        yiffybot  : apassword
+imgur:
+    id            : imgur_id
+    secret        : imgur_secret
+domains:
+    furaffinity.net:
+        cookies:
+            a     : furaffinity_a
+            b     : furrafinity_b
