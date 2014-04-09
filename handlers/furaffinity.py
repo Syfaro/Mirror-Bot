@@ -3,7 +3,7 @@ import string
 
 from bs4 import BeautifulSoup
 
-from soupselect import select
+from .soupselect import select
 
 
 def furaffinity(thing, config):
