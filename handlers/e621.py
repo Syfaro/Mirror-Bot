@@ -13,7 +13,7 @@ def e621(thing, config):
 
     post_id = post_id[0]
 
-    url = "https://e621.net/post/show/%s.json" % (post_id)
+    url = "https://e621.net/post/show/{}.json".format(post_id)
 
     post = requests.get(url).json()
 

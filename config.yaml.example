@@ -14,3 +14,9 @@ domains:
         cookies:
             a     : furaffinity_a
             b     : furrafinity_b
+    tumblr.com:
+        keys:
+            id    : CLIENT_ID
+            secret: CLIENT_SECRET
+    e621.net:
+    deviantart.net:

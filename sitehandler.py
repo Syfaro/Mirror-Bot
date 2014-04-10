@@ -36,9 +36,6 @@ class SiteHandler:
                 config = self.config[thing.domain]
 
             return self.handlers[thing.domain](thing, config)
-
-        elif 'tumblr' in thing.domain:
-            return self.handlers['tumblr.com'](thing,
-                             self.config['tumblr.com'])
+            
         else:
             return None

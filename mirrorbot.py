@@ -1,6 +1,7 @@
 import yaml
 import sched
 import time
+import warnings
 
 from imgurupload import ImgurUpload
 from reddithandler import RedditHandler
@@ -14,6 +15,10 @@ with open('config.yaml') as f:
 from handlers.e621 import e621 as e621_handler
 from handlers.furaffinity import furaffinity as furaffinity_handler
 from handlers.tumblr import tumblr as tumblr_handler
+from handlers.deviantart import deviantart as deviantart_handler
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=ResourceWarning)
 
 handlers = SiteHandler()
 handlers.load_config(config['domains'])
@@ -21,6 +26,7 @@ handlers.load_config(config['domains'])
 handlers.add_handler('e621.net', e621_handler)
 handlers.add_handler('furaffinity.net', furaffinity_handler)
 handlers.add_handler('tumblr.com', tumblr_handler)
+handlers.add_handler('deviantart.com', deviantart_handler)
 
 imgur = ImgurUpload(config['imgur']['id'], config['imgur']['secret'])
 
@@ -43,6 +49,9 @@ def process_accounts(sc):
                                         subreddit['account']))
 
         items = reddit.items_to_process()
+        if items is None:
+            print('No new items in {}'.format(subreddit['subreddit']))
+            continue
         reddit.do_magic(imgur, items)
         print('Finished {}'.format(subreddit['subreddit']))
 
