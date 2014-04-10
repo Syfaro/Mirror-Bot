@@ -23,7 +23,7 @@ class ImgurUpload:
             return requests.post(self.endpoint + method, data=params,
                                  headers=headers).json()
 
-    def upload_image_by_url(self, url, title=None, description=None):
+    def upload_image_by_url(self, url, title=None, description=None, album=None):
         """
         Uploads an image to imgur using a url,
         optionally with a `title` and `description`.
@@ -34,7 +34,8 @@ class ImgurUpload:
         encoded = base64.b64encode(image)
 
         params = {'image': encoded, 'type': 'base64',
-                  'title': title, 'description': description}
+                  'title': title, 'description': description, 
+                  'album': album}
 
         return self.make_request('image', 'POST', params)
 
@@ -48,9 +49,22 @@ class ImgurUpload:
         with open(path) as f:
             file = f.read()
 
+# file() is deprecated in python 3.x, so if using that, change to open()
+
         encoded = base64.b64encode(file)
 
         params = {'image': encoded, 'type': 'base64',
-                  'title': title, 'description': description}
+                  'title': title, 'description': description, 
+                  'album': album}
 
         return self.make_request('image', 'POST', params)
+
+    def create_album(self, title=None, description=None):
+        """
+        Creates emtpy imgur album with optional title and description
+        generally to be used for tumblr links
+        """
+
+        params = {'title': title, 'description': description}
+        
+        return self.make_request('album', 'POST', params);

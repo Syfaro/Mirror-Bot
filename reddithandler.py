@@ -38,7 +38,7 @@ class RedditHandler:
         flat_comments = praw.helpers.flatten_tree(thing['thing'].comments)
 
         for comment in flat_comments:
-            if comment.author == self.username:
+            if comment.author.name == self.username:
                 return True
 
             return False
@@ -62,6 +62,9 @@ class RedditHandler:
 
                     if 'source' in link:
                         item['source'] = link['source']
+
+                    if 'is_album' in link:
+                        item['is_album'] = link['is_album']
                 else:
                     item['link'] = link
 
@@ -75,10 +78,12 @@ class RedditHandler:
                 continue
 
             links = []
-            if isinstance(item['link'], list):
+            if 'is_album' in item:
+                album = imgur.create_album('', 'Source: ' + item['source'])
                 for link in item['link']:
-                    response = imgur.upload_image_by_url(link)
-                    links.append(response['data']['link'])
+                    response = imgur.upload_image_by_url(link,
+                                             album=album['data']['deletehash'])
+                links.append("https://imgur.com/a/" + album['data']['id'])
             else:
                 response = imgur.upload_image_by_url(item['link'])
                 links.append(response['data']['link'])
@@ -99,4 +104,4 @@ class RedditHandler:
 
             comment += "\n\n_I am a bot, please message me with any concerns!_"
 
-            item.add_comment(comment)
+            item['thing'].add_comment(comment)
