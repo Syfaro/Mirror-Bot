@@ -4,16 +4,17 @@ import re
 
 def tumblr(thing, config):
     """
-    Handler for tumblr
+    handler for tumblr.com
     """
+
     key = config['keys']['id']
 
-    blog = thing.domain
+    blog = thing.true_domain
 
     post_id = re.search(r"\d+", thing.url).group(0)
 
-    api_url = '''http://api.tumblr.com/v2/blog/%s/posts/
-                    photo?id=%s&api_key=%s''' % (blog, post_id, key)
+    api_url = '''http://api.tumblr.com/v2/blog/{0}/posts/
+                    photo?id={1}&api_key={2}'''.format(blog, post_id, key)
 
     post = requests.get(api_url).json()
 

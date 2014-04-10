@@ -1,5 +1,6 @@
 import praw
 import redis
+from re import search
 
 
 class RedditHandler:
@@ -18,8 +19,17 @@ class RedditHandler:
         self.username = username
         self.reddit.login(username, password)
 
+    def deal_with_redis(self, names):
+        self.redis.set('mirrorbot:{}'.format(self.subreddit), names[0])
+
+    def fix_domains(self, thing):
+        if "tumblr.com" in thing.domain or "deviantart.com" in thing.domain:
+            thing.true_domain = thing.domain
+            thing.domain = thing.domain.split(
+                    search(r"(\w+\.)", thing.domain).group(0))[1]
+
     def get_new_submissions(self):
-        last_submission = self.redis.get('mirrorbot:%s' % self.subreddit)
+        last_submission = self.redis.get('mirrorbot:{}'.format(self.subreddit))
 
         submissions = self.reddit.get_subreddit(
             self.subreddit).get_new(limit=100)
@@ -29,7 +39,7 @@ class RedditHandler:
 
         new_submissions = []
         for submission in submissions:
-            if submission.name == last_submission:
+            if submission.name == last_submission.decode('utf-8'):
                 return new_submissions
 
             new_submissions.append(submission)
@@ -46,8 +56,12 @@ class RedditHandler:
     def items_to_process(self):
         things = self.get_new_submissions()
 
+        names = []
         to_process = []
         for thing in things:
+            names.append(thing.name)
+            self.fix_domains(thing)
+
             link = self.handler(thing)
             if link is not None:
                 item = {'thing': thing}
@@ -70,6 +84,9 @@ class RedditHandler:
 
                 to_process.append(item)
 
+        if names:
+            self.deal_with_redis(names)
+
         return to_process
 
     def do_magic(self, imgur, to_process):
@@ -90,16 +107,16 @@ class RedditHandler:
 
             links_formatted = ''
             for link in links:
-                links_formatted += "* [%s](%s)" % (link, link)
+                links_formatted += "* [{0}]({1})".format(link, link)
 
-            comment = "imgur mirror:\n\n%s\n" % (links_formatted)
+            comment = "imgur mirror:\n\n{}\n".format(links_formatted)
 
             if 'title' in item:
-                comment += "\nTitle: %s\n" % (item['title'])
+                comment += "\nTitle: {}\n".format(item['title'])
             if 'author' in item:
-                comment += "\nArtist: %s\n" % (item['author'])
+                comment += "\nArtist: {}\n".format(item['author'])
             if 'source' in item:
-                comment += "\nSource: [%s](%s)\n" % (item['source'],
+                comment += "\nSource: [{0}]({1})\n".format(item['source'],
                                                      item['source'])
 
             comment += "\n\n_I am a bot, please message me with any concerns!_"
