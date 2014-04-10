@@ -19,17 +19,19 @@ class RedditHandler:
         self.reddit.login(username, password)
 
     def get_new_submissions(self):
-        last_submission = self.redis.get('mirrorbot:%s' % self.subreddit)
+        last_submission = self.redis.get('mirrorbot:{}'.format(self.subreddit))
 
         submissions = self.reddit.get_subreddit(
             self.subreddit).get_new(limit=100)
 
         if last_submission is None:
+            last = next(submissions)
+            self.redis.set('mirrorbot:{}'.format(self.subreddit), last.name)
             return submissions
 
         new_submissions = []
         for submission in submissions:
-            if submission.name == last_submission:
+            if submission.name == last_submission.decode('utf-8'):
                 return new_submissions
 
             new_submissions.append(submission)
