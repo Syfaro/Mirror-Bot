@@ -112,13 +112,15 @@ class RedditHandler:
             comment = "imgur mirror:\n\n{}\n".format(links_formatted)
 
             if 'title' in item:
-                comment += "\nTitle: {}\n".format(item['title'])
+                comment += "\n**Title**: {}\n".format(item['title'])
             if 'author' in item:
-                comment += "\nArtist: {}\n".format(item['author'])
+                comment += "\n**Artist**: {}\n".format(item['author'])
             if 'source' in item:
-                comment += "\nSource: [{0}]({1})\n".format(item['source'],
+                comment += "\n**Source**: [{0}]({1})\n".format(item['source'],
                                                      item['source'])
 
-            comment += "\n\n_I am a bot, please message me with any concerns!_"
+            comment += '''\n\n_I am a bot[ ^here's ^my ^code]\
+                                (https://github.com/Syfaro/Mirror-Bot),\
+                                please message me with any concerns!_'''
 
             item['thing'].add_comment(comment)
