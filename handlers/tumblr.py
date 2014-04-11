@@ -11,7 +11,7 @@ def tumblr(thing, config):
 
     blog = thing.true_domain
 
-    post_id = re.search(r"\d+(?=/)", thing.url).group(0)
+    post_id = re.search(r"\d+(?!\m)", thing.url).group(0)
 
     api_url = '''http://api.tumblr.com/v2/blog/{0}/posts/
                     photo?id={1}&api_key={2}'''.format(blog, post_id, key)
